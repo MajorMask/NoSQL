@@ -1,0 +1,32 @@
+
+version: '3.8'
+
+services:
+  hbase:
+    image: harisekhon/hbase
+    container_name: hbase
+    hostname: hbase
+    ports:
+      - "16010:16010"   # HBase Web UI
+      - "2181:2181"     # Zookeeper
+      - "9090:9090"     # Thrift (for happybase)
+    platform: linux/amd64  # For Apple Silicon compatibility
+    networks:
+      - hbase-net
+
+  pyclient:
+    image: python:3.10-slim
+    container_name: pyclient
+    depends_on:
+      - hbase
+    networks:
+      - hbase-net
+    volumes:
+      - ./data:/data     # Your local CSV files live in ./data
+    working_dir: /data
+    command: tail -f /dev/null  # Keeps container alive so you can exec into it
+
+networks:
+  hbase-net:
+    driver: bridge
+
